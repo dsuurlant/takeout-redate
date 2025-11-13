@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TakeoutRedate\Tests\Platform;
 
 use PHPUnit\Framework\TestCase;
+use TakeoutRedate\Platform\Platform;
 use TakeoutRedate\Platform\PlatformDetector;
 
 class PlatformDetectorTest extends TestCase
@@ -36,12 +37,12 @@ class PlatformDetectorTest extends TestCase
         $this->assertIsBool($result);
     }
 
-    public function testGetPlatformReturnsString(): void
+    public function testGetPlatformReturnsPlatformEnum(): void
     {
         $platform = $this->detector->getPlatform();
         
-        $this->assertIsString($platform);
-        $this->assertContains($platform, ['macos', 'windows', 'linux', 'unknown']);
+        $this->assertInstanceOf(Platform::class, $platform);
+        $this->assertContains($platform, [Platform::MACOS, Platform::WINDOWS, Platform::LINUX, Platform::UNKNOWN]);
     }
 
     public function testPlatformMethodsAreMutuallyExclusiveOnActualPlatform(): void
@@ -64,13 +65,13 @@ class PlatformDetectorTest extends TestCase
         $platform = $this->detector->getPlatform();
 
         if ($this->detector->isMac()) {
-            $this->assertSame('macos', $platform);
+            $this->assertSame(Platform::MACOS, $platform);
         } elseif ($this->detector->isWindows()) {
-            $this->assertSame('windows', $platform);
+            $this->assertSame(Platform::WINDOWS, $platform);
         } elseif ($this->detector->isLinux()) {
-            $this->assertSame('linux', $platform);
+            $this->assertSame(Platform::LINUX, $platform);
         } else {
-            $this->assertSame('unknown', $platform);
+            $this->assertSame(Platform::UNKNOWN, $platform);
         }
     }
 }

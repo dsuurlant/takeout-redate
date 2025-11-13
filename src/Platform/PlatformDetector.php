@@ -21,18 +21,18 @@ class PlatformDetector
         return 0 === stripos(\PHP_OS_FAMILY, 'Linux');
     }
 
-    public function getPlatform(): string
+    public function getPlatform(): Platform
     {
         if ($this->isMac()) {
-            return 'macos';
+            return Platform::MACOS;
         }
         if ($this->isWindows()) {
-            return 'windows';
+            return Platform::WINDOWS;
         }
         if ($this->isLinux()) {
-            return 'linux';
+            return Platform::LINUX;
         }
 
-        return 'unknown';
+        return Platform::UNKNOWN;
     }
 }
