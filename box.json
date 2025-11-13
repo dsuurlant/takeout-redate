@@ -1,0 +1,36 @@
+{
+    "alias": "takeout-redate.phar",
+    "banner": [
+        "Takeout Redate CLI Tool",
+        "",
+        "@release-version@"
+    ],
+    "chmod": "0755",
+    "compression": "GZ",
+    "directories": [
+        "src"
+    ],
+    "files": [
+        "bin/app"
+    ],
+    "finder": [
+        {
+            "name": "*.php",
+            "exclude": [
+                "Tests",
+                "tests"
+            ],
+            "in": "vendor"
+        }
+    ],
+    "git-version": "git-version",
+    "main": "bin/app",
+    "output": "takeout-redate.phar",
+    "php-scoper": false,
+    "stub": true,
+    "metadata": {
+        "version": "@git-version@",
+        "built": "@datetime@"
+    }
+}
+

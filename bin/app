@@ -1,0 +1,17 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use TakeoutRedate\Application;
+use TakeoutRedate\Command\HelloCommand;
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$commands = [
+    new HelloCommand(),
+];
+
+$application = new Application($commands);
+$application->run();
+
