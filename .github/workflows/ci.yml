@@ -32,6 +32,12 @@ jobs:
         with:
           fetch-depth: 0  # Required for box git-version feature
     
+      - name: Normalize line endings
+        run: |
+          git config core.autocrlf false
+          git config core.eol lf
+          git checkout -- .
+    
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
