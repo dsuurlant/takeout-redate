@@ -109,7 +109,6 @@ class PharIntegrationTest extends TestCase
             $this->getPhpExecutable(),
             $this->pharPath,
             '--path=' . $testArchive,
-            '--no-delete',
         ]);
 
         $process->run();
@@ -121,26 +120,9 @@ class PharIntegrationTest extends TestCase
         $this->assertStringContainsString('file(s) processed', $process->getOutput());
     }
 
-    public function testPharPreservesJsonFilesWithNoDeleteFlag(): void
+    public function testPharPreservesJsonFilesByDefault(): void
     {
         $testArchive = $this->copyFixtureToTestDir('test-no-delete');
-
-        $jsonCountBefore = $this->countJsonFiles($testArchive);
-        $this->assertGreaterThan(0, $jsonCountBefore, 'Fixture should contain JSON files');
-
-        $this->runPhar($testArchive, ['--no-delete' => true]);
-
-        $jsonCountAfter = $this->countJsonFiles($testArchive);
-        $this->assertSame(
-            $jsonCountBefore,
-            $jsonCountAfter,
-            'JSON files should be preserved when using --no-delete flag'
-        );
-    }
-
-    public function testPharDeletesJsonFilesWithoutNoDeleteFlag(): void
-    {
-        $testArchive = $this->copyFixtureToTestDir('test-delete');
 
         $jsonCountBefore = $this->countJsonFiles($testArchive);
         $this->assertGreaterThan(0, $jsonCountBefore, 'Fixture should contain JSON files');
@@ -149,9 +131,26 @@ class PharIntegrationTest extends TestCase
 
         $jsonCountAfter = $this->countJsonFiles($testArchive);
         $this->assertSame(
+            $jsonCountBefore,
+            $jsonCountAfter,
+            'JSON files should be preserved by default'
+        );
+    }
+
+    public function testPharDeletesJsonFilesWithDeleteFlag(): void
+    {
+        $testArchive = $this->copyFixtureToTestDir('test-delete');
+
+        $jsonCountBefore = $this->countJsonFiles($testArchive);
+        $this->assertGreaterThan(0, $jsonCountBefore, 'Fixture should contain JSON files');
+
+        $this->runPhar($testArchive, ['--delete' => true]);
+
+        $jsonCountAfter = $this->countJsonFiles($testArchive);
+        $this->assertSame(
             0,
             $jsonCountAfter,
-            'JSON files should be deleted when --no-delete flag is not used'
+            'JSON files should be deleted when --delete flag is used'
         );
     }
 
@@ -163,8 +162,8 @@ class PharIntegrationTest extends TestCase
         $expectedTimestamps = $this->collectExpectedTimestamps($testArchive);
         $this->assertNotEmpty($expectedTimestamps, 'Should have expected timestamps from JSON files');
 
-        // Run PHAR with --no-delete to preserve JSON files for verification
-        $this->runPhar($testArchive, ['--no-delete' => true]);
+        // Run PHAR without --delete to preserve JSON files for verification (default behavior)
+        $this->runPhar($testArchive);
 
         // Verify timestamps were updated
         $errors = [];
@@ -200,7 +199,7 @@ class PharIntegrationTest extends TestCase
         $testArchive = $this->copyFixtureToTestDir('test-nested');
 
         $output = [];
-        $this->runPhar($testArchive, ['--no-delete' => true], $output);
+        $this->runPhar($testArchive, [], $output);
 
         $outputString = implode("\n", $output);
 
@@ -218,7 +217,7 @@ class PharIntegrationTest extends TestCase
      * Run the PHAR with given options.
      *
      * @param string $rootDir Directory path to process
-     * @param array<string, bool|string> $options Additional options (e.g., ['--no-delete' => true])
+     * @param array<string, bool|string> $options Additional options (e.g., ['--delete' => true])
      * @param array<string> $output Output array (passed by reference)
      */
     private function runPhar(string $rootDir, array $options = [], ?array &$output = null): void
