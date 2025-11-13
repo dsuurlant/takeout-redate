@@ -198,40 +198,15 @@ class TakeoutRedateCommandTest extends TestCase
         }
     }
 
-    public function testCommandUsesDefaultRootDirectory(): void
+    public function testCommandRequiresPathOption(): void
     {
-        $tempDir = $this->createTempDir();
-        $originalCwd = getcwd();
-        
-        try {
-            chdir($tempDir);
-            
-            $adapter = $this->createMock(FileTimestampAdapter::class);
-            $adapter->method('isAvailable')->willReturn(true);
-            $this->adapterFactory->method('create')->willReturn($adapter);
+        $this->commandTester->execute([
+            '--dry-run' => true,
+        ]);
 
-            // Mock the services to avoid file system operations
-            $this->jsonReader
-                ->method('readTimestamps')
-                ->willReturn([null, null]);
-
-            $this->mediaResolver
-                ->method('derivePrefix')
-                ->willReturn([$tempDir, 'test']);
-
-            $this->mediaResolver
-                ->method('resolveMediaPath')
-                ->willReturn(null);
-
-            $this->commandTester->execute([
-                '--dry-run' => true,
-            ]);
-
-            $this->assertSame(Command::SUCCESS, $this->commandTester->getStatusCode());
-        } finally {
-            chdir($originalCwd);
-            $this->cleanupTempDir($tempDir);
-        }
+        $this->assertSame(Command::FAILURE, $this->commandTester->getStatusCode());
+        $this->assertStringContainsString('The --path option is required', $this->commandTester->getDisplay());
+        $this->assertStringContainsString('--path', $this->commandTester->getDisplay());
     }
 
     private function createTempDir(): string

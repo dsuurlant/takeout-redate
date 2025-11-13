@@ -34,7 +34,7 @@ class TakeoutRedateCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addOption('path', null, InputOption::VALUE_REQUIRED, 'Directory path to scan', '.')
+            ->addOption('path', null, InputOption::VALUE_REQUIRED, 'Directory path to scan')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Preview only; do not modify files and do not delete JSONs')
             ->addOption('delete', null, InputOption::VALUE_NONE, 'Delete JSON files after processing');
     }
@@ -43,7 +43,29 @@ class TakeoutRedateCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        $path = rtrim((string) $input->getOption('path'), \DIRECTORY_SEPARATOR);
+        $pathOption = $input->getOption('path');
+        if (null === $pathOption || '' === $pathOption) {
+            $io->error('The --path option is required.');
+            $output->writeln('');
+            $help = $this->getHelp() ?: $this->getDescription();
+            if ($help) {
+                $output->writeln($help);
+                $output->writeln('');
+            }
+            $output->writeln('<info>Usage:</info>');
+            $output->writeln('  '.$this->getSynopsis());
+            $output->writeln('');
+            $output->writeln('<info>Options:</info>');
+            foreach ($this->getDefinition()->getOptions() as $option) {
+                $name = '--'.$option->getName();
+                $description = $option->getDescription();
+                $output->writeln(\sprintf('  %-20s %s', $name, $description));
+            }
+
+            return Command::FAILURE;
+        }
+
+        $path = rtrim((string) $pathOption, \DIRECTORY_SEPARATOR);
         $dryRun = (bool) $input->getOption('dry-run');
         $delete = (bool) $input->getOption('delete');
 
