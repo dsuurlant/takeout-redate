@@ -34,7 +34,7 @@ class TakeoutRedateCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addOption('root', null, InputOption::VALUE_REQUIRED, 'Root directory to scan', '.')
+            ->addOption('path', null, InputOption::VALUE_REQUIRED, 'Directory path to scan', '.')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Preview only; do not modify files and do not delete JSONs')
             ->addOption('no-delete', null, InputOption::VALUE_NONE, 'Do not delete JSON files after processing');
     }
@@ -43,12 +43,12 @@ class TakeoutRedateCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        $root = rtrim((string) $input->getOption('root'), \DIRECTORY_SEPARATOR);
+        $path = rtrim((string) $input->getOption('path'), \DIRECTORY_SEPARATOR);
         $dryRun = (bool) $input->getOption('dry-run');
         $noDelete = (bool) $input->getOption('no-delete');
 
-        if (!is_dir($root)) {
-            $io->error("Root directory not found: {$root}");
+        if (!is_dir($path)) {
+            $io->error("Directory not found: {$path}");
 
             return Command::FAILURE;
         }
@@ -65,7 +65,7 @@ class TakeoutRedateCommand extends Command
         // PASS 1: count only *.json files for the progress max
         $total = 0;
         $it1 = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS),
+            new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS),
             \RecursiveIteratorIterator::SELF_FIRST
         );
         foreach ($it1 as $p => $info) {
@@ -82,7 +82,7 @@ class TakeoutRedateCommand extends Command
 
         // PASS 2: process only *.json and advance once per JSON
         $it2 = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS),
+            new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS),
             \RecursiveIteratorIterator::SELF_FIRST
         );
 

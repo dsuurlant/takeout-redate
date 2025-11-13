@@ -108,7 +108,7 @@ class PharIntegrationTest extends TestCase
         $process = new Process([
             $this->getPhpExecutable(),
             $this->pharPath,
-            '--root=' . $testArchive,
+            '--path=' . $testArchive,
             '--no-delete',
         ]);
 
@@ -217,7 +217,7 @@ class PharIntegrationTest extends TestCase
     /**
      * Run the PHAR with given options.
      *
-     * @param string $rootDir Root directory to process
+     * @param string $rootDir Directory path to process
      * @param array<string, bool|string> $options Additional options (e.g., ['--no-delete' => true])
      * @param array<string> $output Output array (passed by reference)
      */
@@ -226,7 +226,7 @@ class PharIntegrationTest extends TestCase
         $command = [
             $this->getPhpExecutable(),
             $this->pharPath,
-            '--root=' . $rootDir,
+            '--path=' . $rootDir,
         ];
 
         foreach ($options as $option => $value) {

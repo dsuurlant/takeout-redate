@@ -47,17 +47,17 @@ class TakeoutRedateCommandTest extends TestCase
 
     public function testCommandHasAlias(): void
     {
-        $this->assertSame(['imgdates'], $this->command->getAliases());
+        $this->assertSame(['redate'], $this->command->getAliases());
     }
 
     public function testCommandFailsWhenRootDirectoryDoesNotExist(): void
     {
         $this->commandTester->execute([
-            '--root' => '/nonexistent/directory/path',
+            '--path' => '/nonexistent/directory/path',
         ]);
 
         $this->assertSame(Command::FAILURE, $this->commandTester->getStatusCode());
-        $this->assertStringContainsString('Root directory not found', $this->commandTester->getDisplay());
+        $this->assertStringContainsString('Directory not found', $this->commandTester->getDisplay());
     }
 
     public function testCommandFailsWhenAdapterNotAvailableInNonDryRunMode(): void
@@ -70,7 +70,7 @@ class TakeoutRedateCommandTest extends TestCase
             $this->adapterFactory->method('create')->willReturn($adapter);
 
             $this->commandTester->execute([
-                '--root' => $tempDir,
+                '--path' => $tempDir,
             ]);
 
             $this->assertSame(Command::FAILURE, $this->commandTester->getStatusCode());
@@ -90,7 +90,7 @@ class TakeoutRedateCommandTest extends TestCase
             $this->adapterFactory->method('create')->willReturn($adapter);
 
             $this->commandTester->execute([
-                '--root' => $tempDir,
+                '--path' => $tempDir,
                 '--dry-run' => true,
             ]);
 
@@ -129,7 +129,7 @@ class TakeoutRedateCommandTest extends TestCase
                 ->willReturn($mediaFile);
 
             $this->commandTester->execute([
-                '--root' => $tempDir,
+                '--path' => $tempDir,
                 '--dry-run' => true,
             ]);
 
@@ -152,7 +152,7 @@ class TakeoutRedateCommandTest extends TestCase
             $this->adapterFactory->method('create')->willReturn($adapter);
 
             $this->commandTester->execute([
-                '--root' => $tempDir,
+                '--path' => $tempDir,
                 '--dry-run' => true,
             ]);
 
@@ -188,7 +188,7 @@ class TakeoutRedateCommandTest extends TestCase
                 ->willReturn(null); // Media file not found
 
             $this->commandTester->execute([
-                '--root' => $tempDir,
+                '--path' => $tempDir,
                 '--dry-run' => true,
             ]);
 
