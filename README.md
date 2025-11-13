@@ -2,6 +2,10 @@
 
 A Symfony Console application to recursively go through your Google Takeout archive and rewrite the file dates according to the accompanying metadata json.
 
+## Requirements
+
+- PHP 8.4 or higher
+
 ## Installation
 
 ### As PHAR

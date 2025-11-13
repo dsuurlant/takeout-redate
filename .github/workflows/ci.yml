@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  quality-and-test:
+    name: Quality & Test (${{ matrix.os }}, PHP ${{ matrix.php-version }})
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        include:
+          # Testing on Ubuntu
+          - os: ubuntu-latest
+            php-version: '8.4'
+            build-phar: true
+          # Platform-specific testing on Windows and macOS
+          - os: windows-latest
+            php-version: '8.4'
+            build-phar: true
+          - os: macos-latest
+            php-version: '8.4'
+            build-phar: true
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for box git-version feature
+    
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: mbstring, xml, curl, zip
+          coverage: none
+    
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php-version }}-composer-
+    
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+    
+      - name: Run code style check
+        run: composer cs-check
+    
+      - name: Run PHPStan
+        run: composer phpstan
+    
+      - name: Run tests
+        run: composer test
+    
+      - name: Build PHAR file
+        if: matrix.build-phar
+        run: composer build
+    
+      - name: Upload PHAR artifact
+        if: matrix.build-phar
+        uses: actions/upload-artifact@v4
+        with:
+          name: takeout-redate-${{ matrix.os }}-php${{ matrix.php-version }}.phar
+          path: takeout-redate.phar
+          retention-days: 30
+
