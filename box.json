@@ -10,7 +10,8 @@
         "src"
     ],
     "files": [
-        "bin/app"
+        "bin/app",
+        "vendor/autoload.php"
     ],
     "finder": [
         {
@@ -27,6 +28,9 @@
         },
         {
             "in": "vendor/symfony/console/Resources"
+        },
+        {
+            "in": "vendor/composer"
         }
     ],
     "git-version": "git-version",

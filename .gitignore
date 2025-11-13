@@ -1,6 +1,5 @@
 /vendor/
 /takeout-redate.phar
-composer.lock
 .php-cs-fixer.cache
 .phpstan
 .phpunit.cache

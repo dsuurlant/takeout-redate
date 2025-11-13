@@ -1,18 +1,18 @@
 {
-    "name": "takeout-redate/cli",
-    "description": "A Symfony Console CLI tool",
+    "name": "dsuurlant/takeout-redate",
+    "description": "A Symfony Console CLI tool to restore filesystem timestamps for Google Takeout media from JSON metadata.",
     "type": "project",
     "license": "MIT",
     "require": {
         "php": "^8.4",
-        "symfony/console": "^6.0|^7.0",
-        "symfony/process": "^6.0|^7.0"
+        "symfony/console": "^7.3",
+        "symfony/process": "^7.3"
     },
     "require-dev": {
-        "phpunit/phpunit": "^10.0",
-        "humbug/box": "^4.0",
-        "friendsofphp/php-cs-fixer": "^3.0",
-        "phpstan/phpstan": "^1.10"
+        "friendsofphp/php-cs-fixer": "^3.89",
+        "humbug/box": "^4.6",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^10.5"
     },
     "autoload": {
         "psr-4": {

@@ -46,9 +46,6 @@ class MediaFileResolver
 
         // Fallback: match by stem, accept any 3–4 char extension, pick shortest basename
         $prefixStem = pathinfo($prefixName, \PATHINFO_FILENAME);
-        if (!\is_string($prefixStem)) {
-            return null;
-        }
         $best = null;
         $bestLen = \PHP_INT_MAX;
 
@@ -67,7 +64,7 @@ class MediaFileResolver
 
             if (0 === strncasecmp($entry, $prefixStem, \strlen($prefixStem))) {
                 $ext = pathinfo($entry, \PATHINFO_EXTENSION);
-                if (\is_string($ext) && '' !== $ext && preg_match('/^[A-Za-z0-9]{3,4}$/', $ext)) {
+                if ('' !== $ext && preg_match('/^[A-Za-z0-9]{3,4}$/', $ext)) {
                     $filename = pathinfo($entry, \PATHINFO_FILENAME);
                     $len = \strlen((string) $filename);
                     if ($len < $bestLen) {
