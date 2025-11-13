@@ -65,6 +65,16 @@ jobs:
       - name: Run tests
         run: composer test
     
+      - name: Clean Box temp dirs on Windows (pre-build)
+        if: matrix.build-phar && runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $tempPath = "$env:LOCALAPPDATA\Temp\box"
+          if (Test-Path $tempPath) {
+            Write-Host "Cleaning Box temp directory: $tempPath"
+            Remove-Item -Recurse -Force "$tempPath\*" -ErrorAction SilentlyContinue
+          }
+    
       - name: Build PHAR file
         if: matrix.build-phar
         shell: bash
@@ -78,13 +88,32 @@ jobs:
               exit 0
             fi
             if [ $attempt -lt $max_attempts ]; then
-              echo "Build failed. Waiting 5 seconds before retry..."
+              echo "Build failed. Cleaning up and waiting 5 seconds before retry..."
+              if [ "$RUNNER_OS" = "Windows" ]; then
+                # Clean Box temp directories on Windows between retries
+                powershell -Command "if (Test-Path \"$env:LOCALAPPDATA\Temp\box\") { Remove-Item -Recurse -Force \"$env:LOCALAPPDATA\Temp\box\*\" -ErrorAction SilentlyContinue }"
+              fi
               sleep 5
             fi
             attempt=$((attempt + 1))
           done
           echo "Build failed after $max_attempts attempts"
           exit 1
+    
+      - name: Wait for file handles to release (Windows)
+        if: matrix.build-phar && runner.os == 'Windows'
+        shell: pwsh
+        run: Start-Sleep -Seconds 5
+    
+      - name: Clean Box temp dirs on Windows (post-build)
+        if: matrix.build-phar && runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $tempPath = "$env:LOCALAPPDATA\Temp\box"
+          if (Test-Path $tempPath) {
+            Write-Host "Cleaning Box temp directory: $tempPath"
+            Remove-Item -Recurse -Force "$tempPath\*" -ErrorAction SilentlyContinue
+          }
     
       - name: Upload PHAR artifact
         if: matrix.build-phar
