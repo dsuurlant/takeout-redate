@@ -180,6 +180,24 @@ class TakeoutJsonReaderTest extends TestCase
         }
     }
 
+    public function testReadTimestampsFromRealWorldExample(): void
+    {
+        $fixturePath = __DIR__.'/../fixtures/example_video.mp4.supplemental-metadata.json';
+        
+        if (!file_exists($fixturePath)) {
+            $this->markTestSkipped('Test fixture not found: '.$fixturePath);
+        }
+
+        $result = $this->reader->readTimestamps($fixturePath);
+
+        $this->assertIsArray($result);
+        $this->assertCount(2, $result);
+        // photoTakenTime: Jan 1, 2020, 12:00:00 PM UTC = 1577880000
+        $this->assertSame(1577880000, $result[0]);
+        // creationTime: Jan 2, 2020, 12:00:00 PM UTC = 1577966400
+        $this->assertSame(1577966400, $result[1]);
+    }
+
     private function createTempFile(string $content): string
     {
         $tempFile = tempnam(sys_get_temp_dir(), 'takeout_json_');
