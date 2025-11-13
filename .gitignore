@@ -4,3 +4,5 @@ composer.lock
 .php-cs-fixer.cache
 .phpstan
 .phpunit.cache
+.DS_Store
+tmp/

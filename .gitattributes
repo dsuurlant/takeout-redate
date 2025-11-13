@@ -1,0 +1,16 @@
+# Normalize line endings
+* text=auto eol=lf
+
+# Explicitly set line endings for PHP files
+*.php text eol=lf
+
+# Binary files
+*.phar binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.mp4 binary
+*.mov binary
+*.zip binary
+
