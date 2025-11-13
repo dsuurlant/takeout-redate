@@ -252,10 +252,14 @@ class TakeoutRedateCommandTest extends TestCase
             if (is_dir($filePath)) {
                 $this->cleanupTempDir($filePath);
             } else {
-                @unlink($filePath);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
             }
         }
-        @rmdir($dir);
+        if (is_dir($dir)) {
+            rmdir($dir);
+        }
     }
 }
 

@@ -107,7 +107,9 @@ class TakeoutRedateCommand extends Command
                     }
                     // Either written or already matching -> delete JSON (unless --no-delete is set)
                     if (!$noDelete) {
-                        @unlink((string) $path);
+                        if (file_exists((string) $path)) {
+                            unlink((string) $path);
+                        }
                     }
                 }
 

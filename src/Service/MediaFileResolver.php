@@ -52,7 +52,12 @@ class MediaFileResolver
         $best = null;
         $bestLen = \PHP_INT_MAX;
 
-        if (($dh = @opendir($dir)) === false) {
+        if (!is_dir($dir) || !is_readable($dir)) {
+            return null;
+        }
+
+        $dh = opendir($dir);
+        if (false === $dh) {
             return null;
         }
         while (($entry = readdir($dh)) !== false) {

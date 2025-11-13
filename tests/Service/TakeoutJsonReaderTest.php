@@ -38,7 +38,9 @@ class TakeoutJsonReaderTest extends TestCase
             $this->assertNull($result[0]);
             $this->assertNull($result[1]);
         } finally {
-            @unlink($tempFile);
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
         }
     }
 
@@ -59,7 +61,9 @@ class TakeoutJsonReaderTest extends TestCase
             $this->assertSame(1234567890, $result[0]);
             $this->assertSame(9876543210, $result[1]);
         } finally {
-            @unlink($tempFile);
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
         }
     }
 
@@ -78,7 +82,9 @@ class TakeoutJsonReaderTest extends TestCase
             $this->assertIsInt($result[0]);
             $this->assertIsInt($result[1]);
         } finally {
-            @unlink($tempFile);
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
         }
     }
 
@@ -99,7 +105,9 @@ class TakeoutJsonReaderTest extends TestCase
             $this->assertSame(1234567890, $result[0]);
             $this->assertSame(9876543210, $result[1]);
         } finally {
-            @unlink($tempFile);
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
         }
     }
 
@@ -117,7 +125,9 @@ class TakeoutJsonReaderTest extends TestCase
             $this->assertNull($result[0]);
             $this->assertNull($result[1]);
         } finally {
-            @unlink($tempFile);
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
         }
     }
 
@@ -137,7 +147,9 @@ class TakeoutJsonReaderTest extends TestCase
             $this->assertSame(1234567890, $result[0]);
             $this->assertNull($result[1]);
         } finally {
-            @unlink($tempFile);
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
         }
     }
 
@@ -158,7 +170,9 @@ class TakeoutJsonReaderTest extends TestCase
             $this->assertNull($result[0]);
             $this->assertNull($result[1]);
         } finally {
-            @unlink($tempFile);
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
         }
     }
 
@@ -176,7 +190,9 @@ class TakeoutJsonReaderTest extends TestCase
             $this->assertNull($result[0]);
             $this->assertNull($result[1]);
         } finally {
-            @unlink($tempFile);
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
         }
     }
 

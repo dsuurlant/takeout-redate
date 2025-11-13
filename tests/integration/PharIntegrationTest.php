@@ -355,7 +355,10 @@ class PharIntegrationTest extends TestCase
 
         if (!$adapter->isAvailable()) {
             // Fallback to filemtime if adapter is not available
-            $mtime = @filemtime($filePath);
+            if (!file_exists($filePath)) {
+                return null;
+            }
+            $mtime = filemtime($filePath);
             return $mtime !== false ? $mtime : null;
         }
 
@@ -397,10 +400,14 @@ class PharIntegrationTest extends TestCase
             if (is_dir($filePath)) {
                 $this->cleanupTempDir($filePath);
             } else {
-                @unlink($filePath);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
             }
         }
-        @rmdir($dir);
+        if (is_dir($dir)) {
+            rmdir($dir);
+        }
     }
 }
 

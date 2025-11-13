@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace TakeoutRedate\Platform;
 
+use Symfony\Component\Process\Process;
+
 class WindowsFileTimestampAdapter implements FileTimestampAdapter
 {
     public function isAvailable(): bool
@@ -64,10 +66,13 @@ class WindowsFileTimestampAdapter implements FileTimestampAdapter
             $escapedPath,
             $formatted
         );
-        $command = \sprintf('powershell -NoProfile -Command "%s" 2>%s', $psCommand, \PHP_OS_FAMILY === 'Windows' ? 'nul' : '/dev/null');
-        @exec($command, $output, $returnCode);
 
-        return 0 === $returnCode;
+        $command = ['powershell', '-NoProfile', '-Command', $psCommand];
+        $process = new Process($command);
+        $process->setTimeout(30);
+        $process->run();
+
+        return $process->isSuccessful();
     }
 
     public function setModificationTime(string $path, ?int $timestamp): bool

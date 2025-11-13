@@ -39,7 +39,9 @@ class WindowsFileTimestampAdapterTest extends TestCase
                 $this->assertGreaterThan(0, $mtime);
             }
         } finally {
-            @unlink($tempFile);
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
         }
     }
 
@@ -62,7 +64,9 @@ class WindowsFileTimestampAdapterTest extends TestCase
                 $this->assertGreaterThan(0, $ctime);
             }
         } finally {
-            @unlink($tempFile);
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
         }
     }
 
@@ -91,7 +95,9 @@ class WindowsFileTimestampAdapterTest extends TestCase
                 }
             }
         } finally {
-            @unlink($tempFile);
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
         }
     }
 
@@ -103,7 +109,9 @@ class WindowsFileTimestampAdapterTest extends TestCase
             $result = $this->adapter->setModificationTime($tempFile, null);
             $this->assertFalse($result);
         } finally {
-            @unlink($tempFile);
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
         }
     }
 
@@ -118,7 +126,9 @@ class WindowsFileTimestampAdapterTest extends TestCase
             // Result may be false if PowerShell is not available or command fails
             $this->assertIsBool($result);
         } finally {
-            @unlink($tempFile);
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
         }
     }
 
@@ -130,7 +140,9 @@ class WindowsFileTimestampAdapterTest extends TestCase
             $result = $this->adapter->setCreationTime($tempFile, null);
             $this->assertFalse($result);
         } finally {
-            @unlink($tempFile);
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
         }
     }
 

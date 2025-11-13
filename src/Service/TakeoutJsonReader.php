@@ -13,7 +13,11 @@ class TakeoutJsonReader
      */
     public function readTimestamps(string $jsonFile): array
     {
-        $raw = @file_get_contents($jsonFile);
+        if (!is_readable($jsonFile)) {
+            return [null, null];
+        }
+
+        $raw = file_get_contents($jsonFile);
         if (false === $raw) {
             return [null, null];
         }
