@@ -1,0 +1,21 @@
+{
+  "title": "photo1.jpg",
+  "description": "",
+  "imageViews": "0",
+  "creationTime": {
+    "timestamp": "1577836800",
+    "formatted": "Jan 1, 2020, 12:00:00 AM UTC"
+  },
+  "photoTakenTime": {
+    "timestamp": "1577836800",
+    "formatted": "Jan 1, 2020, 12:00:00 AM UTC"
+  },
+  "geoData": {
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "altitude": 0.0,
+    "latitudeSpan": 0.0,
+    "longitudeSpan": 0.0
+  }
+}
+

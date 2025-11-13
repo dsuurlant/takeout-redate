@@ -35,7 +35,8 @@ class TakeoutRedateCommand extends Command
     {
         $this
             ->addOption('root', null, InputOption::VALUE_REQUIRED, 'Root directory to scan', '.')
-            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Preview only; do not modify files and do not delete JSONs');
+            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Preview only; do not modify files and do not delete JSONs')
+            ->addOption('no-delete', null, InputOption::VALUE_NONE, 'Do not delete JSON files after processing');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -44,6 +45,7 @@ class TakeoutRedateCommand extends Command
 
         $root = rtrim((string) $input->getOption('root'), \DIRECTORY_SEPARATOR);
         $dryRun = (bool) $input->getOption('dry-run');
+        $noDelete = (bool) $input->getOption('no-delete');
 
         if (!is_dir($root)) {
             $io->error("Root directory not found: {$root}");
@@ -103,8 +105,10 @@ class TakeoutRedateCommand extends Command
                     if ($needsWrite) {
                         $timestampService->applyTimestamps($found, $takenTs, $createdTs);
                     }
-                    // Either written or already matching -> delete JSON
-                    @unlink((string) $path);
+                    // Either written or already matching -> delete JSON (unless --no-delete is set)
+                    if (!$noDelete) {
+                        @unlink((string) $path);
+                    }
                 }
 
                 ++$dirCount[$dir]; // count only resolved items

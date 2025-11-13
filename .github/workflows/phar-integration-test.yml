@@ -1,0 +1,148 @@
+name: PHAR Integration Test
+
+on:
+  # Run after main CI workflow completes (if it exists)
+  # Uncomment and adjust workflow name if you have a main CI workflow:
+  # workflow_run:
+  #   workflows: ["CI"]
+  #   types:
+  #     - completed
+  workflow_dispatch:  # Allow manual triggering
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - '**.php'
+      - 'box.json'
+      - 'composer.json'
+      - '.github/workflows/phar-integration-test.yml'
+
+jobs:
+  build-phar:
+    name: Build PHAR
+    runs-on: ubuntu-latest
+    outputs:
+      phar-artifact: ${{ steps.upload.outputs.artifact-name }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed for git-version in box.json
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer
+      
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      
+      - name: Run tests
+        run: composer test
+      
+      - name: Build PHAR
+        run: composer build
+      
+      - name: Verify PHAR
+        run: |
+          php takeout-redate.phar list
+          php -r "echo 'PHAR size: ' . filesize('takeout-redate.phar') . ' bytes\n';"
+      
+      - name: Upload PHAR artifact
+        uses: actions/upload-artifact@v4
+        id: upload
+        with:
+          name: takeout-redate-phar
+          path: takeout-redate.phar
+          retention-days: 1
+
+  test-phar-linux:
+    name: Test PHAR on Linux
+    needs: build-phar
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer
+      
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      
+      - name: Download PHAR artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: takeout-redate-phar
+          path: .
+      
+      - name: Make PHAR executable
+        run: chmod +x takeout-redate.phar
+      
+      - name: Run integration tests
+        run: composer test -- --filter PharIntegrationTest
+
+  test-phar-macos:
+    name: Test PHAR on macOS
+    needs: build-phar
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer
+      
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      
+      - name: Download PHAR artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: takeout-redate-phar
+          path: .
+      
+      - name: Make PHAR executable
+        run: chmod +x takeout-redate.phar
+      
+      - name: Run integration tests
+        run: composer test -- --filter PharIntegrationTest
+
+  test-phar-windows:
+    name: Test PHAR on Windows
+    needs: build-phar
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer
+      
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      
+      - name: Download PHAR artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: takeout-redate-phar
+          path: .
+      
+      - name: Run integration tests
+        run: composer test -- --filter PharIntegrationTest
+
