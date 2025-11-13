@@ -1,0 +1,167 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v1.0.0, v1.2.3
+  workflow_run:
+    workflows: ["CI", "PHAR Integration Test"]
+    types:
+      - completed
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release-version:
+    name: Release Version Tag
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Get tag name
+        id: tag
+        run: echo "name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+      - name: Download PHAR artifact
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: ci.yml
+          name: takeout-redate-ubuntu-latest-php8.4.phar
+          path: .
+          check_artifacts: true
+      
+      - name: Rename PHAR for release
+        run: |
+          if [ -f takeout-redate.phar ]; then
+            mv takeout-redate.phar takeout-redate-${{ steps.tag.outputs.name }}.phar
+          else
+            echo "PHAR file not found"
+            exit 1
+          fi
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          name: Release ${{ steps.tag.outputs.name }}
+          files: takeout-redate-${{ steps.tag.outputs.name }}.phar
+          draft: false
+          prerelease: ${{ contains(steps.tag.outputs.name, 'alpha') || contains(steps.tag.outputs.name, 'beta') || contains(steps.tag.outputs.name, 'rc') }}
+          body: |
+            ## Installation
+            
+            Download `takeout-redate-${{ steps.tag.outputs.name }}.phar` and make it executable:
+            ```bash
+            chmod +x takeout-redate-${{ steps.tag.outputs.name }}.phar
+            ./takeout-redate-${{ steps.tag.outputs.name }}.phar --help
+            ```
+            
+          generate_release_notes: true
+
+  release-dev-main:
+    name: Update dev-main Release
+    runs-on: ubuntu-latest
+    # Only trigger when PHAR Integration Test completes successfully
+    # (since it already depends on CI succeeding)
+    if: |
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.name == 'PHAR Integration Test' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.repository.full_name == github.repository &&
+      github.event.workflow_run.head_branch == 'main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha }}
+      
+      - name: Get commit short SHA
+        id: commit
+        run: |
+          SHA="${{ github.event.workflow_run.head_sha }}"
+          SHORT_SHA=${SHA:0:7}
+          echo "sha=$SHA" >> $GITHUB_OUTPUT
+          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+      
+      - name: Get commit date
+        id: date
+        run: |
+          DATE=$(git log -1 --format=%ci ${{ steps.commit.outputs.sha }} | cut -d' ' -f1)
+          TIME=$(git log -1 --format=%ci ${{ steps.commit.outputs.sha }} | cut -d' ' -f2 | cut -d':' -f1,2)
+          echo "date=${DATE}-${TIME}" >> $GITHUB_OUTPUT
+      
+      - name: Get CI workflow run ID
+        id: ci-run
+        run: |
+          # Find the CI workflow run that corresponds to this commit
+          # The PHAR Integration Test was triggered by this CI run
+          COMMIT_SHA="${{ github.event.workflow_run.head_sha }}"
+          CI_RUN_ID=$(gh api repos/${{ github.repository }}/actions/runs \
+            --jq ".workflow_runs[] | select(.head_sha == \"$COMMIT_SHA\" and .name == \"CI\" and .conclusion == \"success\") | .id" \
+            --paginate | head -n 1)
+          
+          if [ -z "$CI_RUN_ID" ]; then
+            echo "Error: Could not find successful CI run for commit $COMMIT_SHA"
+            exit 1
+          fi
+          
+          echo "run_id=$CI_RUN_ID" >> $GITHUB_OUTPUT
+          echo "Found CI run ID: $CI_RUN_ID"
+        env:
+          GH_TOKEN: ${{ github.token }}
+      
+      - name: Download PHAR artifact
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: ci.yml
+          name: takeout-redate-ubuntu-latest-php8.4.phar
+          path: .
+          run_id: ${{ steps.ci-run.outputs.run_id }}
+          if_no_artifact_found: fail
+      
+      - name: Rename PHAR for dev release
+        run: |
+          if [ -f takeout-redate.phar ]; then
+            mv takeout-redate.phar takeout-redate-dev-main-${{ steps.date.outputs.date }}-${{ steps.commit.outputs.short_sha }}.phar
+          else
+            echo "PHAR file not found"
+            exit 1
+          fi
+      
+      - name: Create or Update dev-main Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: dev-main
+          name: Development Build (main branch)
+          files: takeout-redate-dev-main-${{ steps.date.outputs.date }}-${{ steps.commit.outputs.short_sha }}.phar
+          draft: false
+          prerelease: true
+          body: |
+            ## Development Build from main branch
+            
+            This is an automatically generated development build from the main branch.
+            
+            **Commit:** [${{ steps.commit.outputs.short_sha }}](https://github.com/${{ github.repository }}/commit/${{ steps.commit.outputs.sha }})
+            
+            **Build Date:** ${{ steps.date.outputs.date }}
+            
+            ⚠️ **Warning:** This is a development build and may contain unstable changes. For production use, please download a [stable release](https://github.com/${{ github.repository }}/releases).
+            
+            ## Installation
+            
+            Download `takeout-redate-dev-main-${{ steps.date.outputs.date }}-${{ steps.commit.outputs.short_sha }}.phar` and make it executable:
+            ```bash
+            chmod +x takeout-redate-dev-main-${{ steps.date.outputs.date }}-${{ steps.commit.outputs.short_sha }}.phar
+            ./takeout-redate-dev-main-${{ steps.date.outputs.date }}-${{ steps.commit.outputs.short_sha }}.phar --help
+            ```
+          generate_release_notes: false
+
