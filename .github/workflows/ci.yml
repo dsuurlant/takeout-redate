@@ -88,11 +88,14 @@ jobs:
               exit 0
             fi
             if [ $attempt -lt $max_attempts ]; then
-              echo "Build failed. Cleaning up and waiting 5 seconds before retry..."
+              echo "Build failed. Waiting for file handles to release before cleanup..."
               if [ "$RUNNER_OS" = "Windows" ]; then
-                # Clean Box temp directories on Windows between retries
+                # Wait for file handles to be released
+                powershell -Command "Start-Sleep -Seconds 5"
+                # Clean Box temp directories
                 powershell -Command "if (Test-Path \"$env:LOCALAPPDATA\Temp\box\") { Remove-Item -Recurse -Force \"$env:LOCALAPPDATA\Temp\box\*\" -ErrorAction SilentlyContinue }"
               fi
+              echo "Waiting 5 seconds before retry..."
               sleep 5
             fi
             attempt=$((attempt + 1))
