@@ -14,7 +14,7 @@ class Application extends BaseApplication
      */
     public function __construct(iterable $commands = [])
     {
-        parent::__construct('Takeout Redate', '1.0.0');
+        parent::__construct('Takeout Redate', '0.1.0');
 
         foreach ($commands as $command) {
             $this->add($command);
