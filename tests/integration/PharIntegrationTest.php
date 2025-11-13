@@ -34,7 +34,7 @@ class PharIntegrationTest extends TestCase
             $this->markTestSkipped('PHAR file not found. Build it first with: composer build');
         }
 
-        // Verify PHAR is executable and can at least show help
+        // Verify PHAR is executable and can at least show list
         $process = new Process([
             $this->getPhpExecutable(),
             $this->pharPath,
@@ -65,6 +65,40 @@ class PharIntegrationTest extends TestCase
         }
 
         parent::tearDown();
+    }
+
+    public function testPharShowsHelpCommand(): void
+    {
+        $process = new Process([
+            $this->getPhpExecutable(),
+            $this->pharPath,
+            'help',
+        ]);
+
+        $process->run();
+
+        $this->assertTrue(
+            $process->isSuccessful(),
+            'PHAR help command failed. Output: ' . $process->getOutput() . "\nError: " . $process->getErrorOutput()
+        );
+        $this->assertStringContainsString('Display help for a command', $process->getOutput());
+    }
+
+    public function testPharShowsHelpWithoutArguments(): void
+    {
+        $process = new Process([
+            $this->getPhpExecutable(),
+            $this->pharPath,
+        ]);
+
+        $process->run();
+
+        $this->assertTrue(
+            $process->isSuccessful(),
+            'PHAR without arguments failed. Output: ' . $process->getOutput() . "\nError: " . $process->getErrorOutput()
+        );
+        $this->assertStringContainsString('Takeout Redate', $process->getOutput());
+        $this->assertStringContainsString('Available commands', $process->getOutput());
     }
 
     public function testPharExecutesSuccessfully(): void

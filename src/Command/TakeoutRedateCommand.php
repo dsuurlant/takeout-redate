@@ -17,9 +17,9 @@ use TakeoutRedate\Service\MediaFileResolver;
 use TakeoutRedate\Service\TakeoutJsonReader;
 
 #[AsCommand(
-    name: 'takeout:restore-imagedates',
-    description: 'Restore filesystem timestamps for Google Photos Takeout media from JSON sidecars.',
-    aliases: ['imgdates'],
+    name: 'takeout-redate',
+    description: 'Restore filesystem timestamps for Google Takeout media from JSON metadata.',
+    aliases: ['redate'],
 )]
 class TakeoutRedateCommand extends Command
 {

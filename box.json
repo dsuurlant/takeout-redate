@@ -24,6 +24,9 @@
                 "humbug"
             ],
             "in": "vendor"
+        },
+        {
+            "in": "vendor/symfony/console/Resources"
         }
     ],
     "git-version": "git-version",

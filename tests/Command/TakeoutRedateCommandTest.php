@@ -42,7 +42,7 @@ class TakeoutRedateCommandTest extends TestCase
 
     public function testCommandHasCorrectName(): void
     {
-        $this->assertSame('takeout:restore-imagedates', $this->command->getName());
+        $this->assertSame('takeout-redate', $this->command->getName());
     }
 
     public function testCommandHasAlias(): void
