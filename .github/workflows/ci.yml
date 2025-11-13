@@ -67,7 +67,24 @@ jobs:
     
       - name: Build PHAR file
         if: matrix.build-phar
-        run: composer build
+        shell: bash
+        run: |
+          max_attempts=3
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            echo "Build attempt $attempt of $max_attempts"
+            if composer build; then
+              echo "Build successful on attempt $attempt"
+              exit 0
+            fi
+            if [ $attempt -lt $max_attempts ]; then
+              echo "Build failed. Waiting 5 seconds before retry..."
+              sleep 5
+            fi
+            attempt=$((attempt + 1))
+          done
+          echo "Build failed after $max_attempts attempts"
+          exit 1
     
       - name: Upload PHAR artifact
         if: matrix.build-phar
