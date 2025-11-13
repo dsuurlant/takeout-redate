@@ -213,6 +213,79 @@ class PharIntegrationTest extends TestCase
         $this->assertGreaterThan(0, $totalProcessed, 'Should have processed at least one file');
     }
 
+    public function testPharDryRunDoesNotModifyFiles(): void
+    {
+        $testArchive = $this->copyFixtureToTestDir('test-dry-run');
+
+        // Collect initial state
+        $jsonCountBefore = $this->countJsonFiles($testArchive);
+        $this->assertGreaterThan(0, $jsonCountBefore, 'Fixture should contain JSON files');
+
+        $initialTimestamps = $this->collectInitialTimestamps($testArchive);
+        $this->assertNotEmpty($initialTimestamps, 'Should have media files to test');
+
+        // Run with --dry-run
+        $output = [];
+        $this->runPhar($testArchive, ['--dry-run' => true], $output);
+
+        // Verify JSON files are still present
+        $jsonCountAfter = $this->countJsonFiles($testArchive);
+        $this->assertSame(
+            $jsonCountBefore,
+            $jsonCountAfter,
+            'JSON files should be preserved in dry-run mode'
+        );
+
+        // Verify file timestamps were NOT modified
+        $errors = [];
+        foreach ($initialTimestamps as $mediaFile => $initialTimestamp) {
+            if (!file_exists($mediaFile)) {
+                continue;
+            }
+
+            $currentTimestamp = $this->getFileCreationTimestamp($mediaFile);
+            if ($currentTimestamp === null) {
+                $errors[] = sprintf('Could not get timestamp for: %s', $mediaFile);
+                continue;
+            }
+
+            // Timestamps should be exactly the same (no tolerance needed since nothing should change)
+            if ($currentTimestamp !== $initialTimestamp) {
+                $errors[] = sprintf(
+                    'Timestamp was modified for %s: initial %d, current %d (diff: %d)',
+                    basename($mediaFile),
+                    $initialTimestamp,
+                    $currentTimestamp,
+                    abs($currentTimestamp - $initialTimestamp)
+                );
+            }
+        }
+
+        $this->assertEmpty($errors, "Dry-run should not modify timestamps:\n" . implode("\n", $errors));
+
+        // Verify output shows files were processed
+        $outputString = implode("\n", $output);
+        $this->assertStringContainsString('file(s) processed', $outputString);
+    }
+
+    public function testPharDryRunDoesNotDeleteJsonFilesEvenWithDeleteFlag(): void
+    {
+        $testArchive = $this->copyFixtureToTestDir('test-dry-run-delete');
+
+        $jsonCountBefore = $this->countJsonFiles($testArchive);
+        $this->assertGreaterThan(0, $jsonCountBefore, 'Fixture should contain JSON files');
+
+        // Run with --dry-run and --delete (should still not delete)
+        $this->runPhar($testArchive, ['--dry-run' => true, '--delete' => true]);
+
+        $jsonCountAfter = $this->countJsonFiles($testArchive);
+        $this->assertSame(
+            $jsonCountBefore,
+            $jsonCountAfter,
+            'JSON files should be preserved in dry-run mode even with --delete flag'
+        );
+    }
+
     /**
      * Run the PHAR with given options.
      *
@@ -308,6 +381,46 @@ class PharIntegrationTest extends TestCase
         }
 
         return $count;
+    }
+
+    /**
+     * Collect initial timestamps of media files before processing.
+     *
+     * @return array<string, int> Map of media file path => initial timestamp
+     */
+    private function collectInitialTimestamps(string $dir): array
+    {
+        $timestamps = [];
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
+        foreach ($iterator as $file) {
+            if (!$file->isFile()) {
+                continue;
+            }
+
+            $filePath = (string) $file;
+            // Skip JSON files
+            if (str_ends_with(strtolower($filePath), '.json')) {
+                continue;
+            }
+
+            // Only collect timestamps for media files (images/videos)
+            $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+            $mediaExtensions = ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov', 'webm'];
+            if (!in_array($ext, $mediaExtensions, true)) {
+                continue;
+            }
+
+            $timestamp = $this->getFileCreationTimestamp($filePath);
+            if ($timestamp !== null) {
+                $timestamps[$filePath] = $timestamp;
+            }
+        }
+
+        return $timestamps;
     }
 
     /**
