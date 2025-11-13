@@ -19,11 +19,14 @@ class LinuxFileTimestampAdapter implements FileTimestampAdapter
         // Linux doesn't have a reliable creation time in stat
         // We can try to get it from statx if available, otherwise return null
         // For now, we'll use the modification time as a fallback
-        $out = @shell_exec('stat -c %W '.escapeshellarg($path).' 2>/dev/null');
-        if (null === $out || false === $out) {
+        $process = new Process(['stat', '-c', '%W', $path]);
+        $process->run();
+
+        if (!$process->isSuccessful()) {
             return null;
         }
-        $val = trim($out);
+
+        $val = trim($process->getOutput());
         if ('' === $val || '0' === $val) {
             return null;
         }

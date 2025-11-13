@@ -39,7 +39,7 @@ class LinuxFileTimestampAdapterTest extends TestCase
                 $this->assertGreaterThan(0, $mtime);
             }
         } finally {
-            @unlink($tempFile);
+            $this->safeRemoveFile($tempFile);
         }
     }
 
@@ -68,7 +68,39 @@ class LinuxFileTimestampAdapterTest extends TestCase
                 $this->assertNull($ctime);
             }
         } finally {
-            @unlink($tempFile);
+            $this->safeRemoveFile($tempFile);
+        }
+    }
+
+    public function testGetCreationTimeReturnsNullWhenProcessFails(): void
+    {
+        // Test with a non-existent file - Process should fail and return null
+        $ctime = $this->adapter->getCreationTime('/nonexistent/file/path/that/does/not/exist');
+        
+        // Process should fail and getCreationTime should return null
+        $this->assertNull($ctime);
+    }
+
+    public function testGetCreationTimeHandlesProcessErrorsGracefully(): void
+    {
+        // Test with a directory instead of a file - stat may behave differently
+        $tempDir = sys_get_temp_dir() . '/takeout_test_dir_' . uniqid();
+        
+        if (!mkdir($tempDir, 0777, true) && !is_dir($tempDir)) {
+            $this->fail('Could not create temporary directory');
+        }
+        
+        try {
+            $ctime = $this->adapter->getCreationTime($tempDir);
+            
+            // Should return either null or a valid timestamp, never throw
+            if ($ctime !== null) {
+                $this->assertIsInt($ctime);
+            } else {
+                $this->assertNull($ctime);
+            }
+        } finally {
+            $this->safeRemoveDirectory($tempDir);
         }
     }
 
@@ -90,7 +122,7 @@ class LinuxFileTimestampAdapterTest extends TestCase
                 }
             }
         } finally {
-            @unlink($tempFile);
+            $this->safeRemoveFile($tempFile);
         }
     }
 
@@ -102,7 +134,7 @@ class LinuxFileTimestampAdapterTest extends TestCase
             $result = $this->adapter->setModificationTime($tempFile, null);
             $this->assertFalse($result);
         } finally {
-            @unlink($tempFile);
+            $this->safeRemoveFile($tempFile);
         }
     }
 
@@ -116,8 +148,17 @@ class LinuxFileTimestampAdapterTest extends TestCase
             
             $this->assertIsBool($result);
         } finally {
-            @unlink($tempFile);
+            $this->safeRemoveFile($tempFile);
         }
+    }
+
+    public function testSetCreationTimeReturnsFalseWhenProcessFails(): void
+    {
+        // Test with a non-existent file - Process should fail
+        $result = $this->adapter->setCreationTime('/nonexistent/file/path', time());
+        
+        // Process should fail and setCreationTime should return false
+        $this->assertFalse($result);
     }
 
     public function testSetCreationTimeReturnsFalseForNullTimestamp(): void
@@ -128,7 +169,21 @@ class LinuxFileTimestampAdapterTest extends TestCase
             $result = $this->adapter->setCreationTime($tempFile, null);
             $this->assertFalse($result);
         } finally {
-            @unlink($tempFile);
+            $this->safeRemoveFile($tempFile);
+        }
+    }
+
+    private function safeRemoveFile(string $file): void
+    {
+        if (file_exists($file)) {
+            unlink($file);
+        }
+    }
+
+    private function safeRemoveDirectory(string $dir): void
+    {
+        if (is_dir($dir)) {
+            rmdir($dir);
         }
     }
 

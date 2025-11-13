@@ -6,6 +6,10 @@ A Symfony Console application to recursively go through your Google Takeout arch
 
 - PHP 8.4 or higher
 
+## Known limitations
+
+When dealing with 1000s of files, go per subdirectory, or the process may stall.
+
 ## Installation
 
 ### As PHAR

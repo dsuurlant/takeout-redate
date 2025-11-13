@@ -23,11 +23,14 @@ class MacOSFileTimestampAdapter implements FileTimestampAdapter
     public function getCreationTime(string $path): ?int
     {
         // stat -f %B -> birth time (creation) in seconds on macOS (0 if unavailable)
-        $out = @shell_exec('stat -f %B '.escapeshellarg($path).' 2>/dev/null');
-        if (null === $out || false === $out) {
+        $process = new Process(['stat', '-f', '%B', $path]);
+        $process->run();
+
+        if (!$process->isSuccessful()) {
             return null;
         }
-        $val = trim($out);
+
+        $val = trim($process->getOutput());
         if ('' === $val || '0' === $val) {
             return null;
         }
@@ -99,7 +102,15 @@ class MacOSFileTimestampAdapter implements FileTimestampAdapter
                 return $cand;
             }
         }
-        $which = trim((string) shell_exec('command -v SetFile 2>/dev/null'));
+
+        $process = new Process(['sh', '-c', 'command -v SetFile']);
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            return null;
+        }
+
+        $which = trim($process->getOutput());
 
         return '' !== $which ? $which : null;
     }
