@@ -8,7 +8,7 @@ A Symfony Console application to recursively go through your Google Takeout arch
 
 ## Known limitations
 
-When dealing with 1000s of files, go per subdirectory, or the process may stall.
+When dealing with 1000s of files over many years go per subdirectory, or the process may stall.
 
 ## Installation
 
@@ -36,6 +36,25 @@ php bin/app
 # Or after building the PHAR
 ./takeout-redate.phar
 
+```
+
+## Development
+
+```bash
+# Install dependencies
+composer install
+
+# Run tests
+composer test
+
+# Build PHAR file
+composer build
+
+# Test build locally (runs tests, builds PHAR, and verifies it works)
+composer test-build
+
+# Code quality checks
+composer quality
 ```
 
 ## License

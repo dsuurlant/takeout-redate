@@ -5,7 +5,6 @@
         "",
         "@release-version@"
     ],
-    "chmod": "0755",
     "compression": "GZ",
     "directories": [
         "src"
@@ -18,16 +17,18 @@
             "name": "*.php",
             "exclude": [
                 "Tests",
-                "tests"
+                "tests",
+                "phpstan",
+                "phpunit",
+                "php-cs-fixer",
+                "humbug"
             ],
             "in": "vendor"
         }
     ],
     "git-version": "git-version",
-    "main": "bin/app",
     "output": "takeout-redate.phar",
-    "php-scoper": false,
-    "stub": true,
+    "php-scoper": null,
     "metadata": {
         "version": "@git-version@",
         "built": "@datetime@"
