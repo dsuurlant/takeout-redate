@@ -4,12 +4,19 @@
 declare(strict_types=1);
 
 use TakeoutRedate\Application;
-use TakeoutRedate\Command\HelloCommand;
+use TakeoutRedate\Command\TakeoutRedateCommand;
+use TakeoutRedate\Platform\FileTimestampAdapterFactory;
+use TakeoutRedate\Service\MediaFileResolver;
+use TakeoutRedate\Service\TakeoutJsonReader;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+$adapterFactory = new FileTimestampAdapterFactory();
+$jsonReader = new TakeoutJsonReader();
+$mediaResolver = new MediaFileResolver();
+
 $commands = [
-    new HelloCommand(),
+    new TakeoutRedateCommand($adapterFactory, $jsonReader, $mediaResolver),
 ];
 
 $application = new Application($commands);
