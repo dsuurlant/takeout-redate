@@ -17,7 +17,7 @@ class ApplicationTest extends TestCase
         $app = new Application();
 
         $this->assertSame('Takeout Redate', $app->getName());
-        $this->assertSame('0.1.0', $app->getVersion());
+        $this->assertSame('0.1.1', $app->getVersion());
     }
 
     public function testApplicationCanAddCommands(): void
